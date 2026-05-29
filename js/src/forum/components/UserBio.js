@@ -19,12 +19,17 @@ function getYearOptions() {
 }
 
 /**
- * Parses a comma-separated bio string into a Set of year strings.
+ * Parses a comma-separated bio string into a sorted array of year strings.
  */
 function parseYears(bio) {
-  return new Set(
-    (bio || '').split(',').map((y) => y.trim()).filter((y) => y.length > 0)
-  );
+  return (bio || '').split(',').map((y) => y.trim()).filter((y) => y.length > 0);
+}
+
+/**
+ * Converts the selectedYears Set to a sorted comma-separated string for storage.
+ */
+function yearsToString(selectedYears) {
+  return Array.from(selectedYears).sort((a, b) => Number(a) - Number(b)).join(',');
 }
 
 /**
@@ -82,8 +87,8 @@ export default class UserBio extends Component {
         </form>
       );
     } else {
-      // Non-editing view: display saved years as plain text, just like
-      // the original displayed the bio text. Clicking switches to checkboxes.
+      // Non-editing view: display saved years as plain text.
+      // Clicking switches to the checkbox editor.
       let subContent;
 
       if (this.loading) {
@@ -160,10 +165,10 @@ export default class UserBio extends Component {
     const currentScroll = e.currentTarget.scrollTop;
     const index = lengthBefore + lineIndex;
 
-    // Only retain saved years that fall within the current valid range
+    // Initialise checkboxes from saved bio, filtering to valid year range
     const validYears = new Set(getYearOptions());
     this.selectedYears = new Set(
-      [...parseYears(this.attrs.user.bio())].filter((y) => validYears.has(y))
+      parseYears(this.attrs.user.bio()).filter((y) => validYears.has(y))
     );
 
     this.textareaRows = getComputedStyle(e.currentTarget).getPropertyValue('--bio-max-lines') || '5';
@@ -175,9 +180,7 @@ export default class UserBio extends Component {
     e.preventDefault();
 
     const user = this.attrs.user;
-    const value = [...this.selectedYears]
-      .sort((a, b) => Number(a) - Number(b))
-      .join(',');
+    const value = yearsToString(this.selectedYears);
 
     if (this.isDirty(value)) {
       this.loading = true;
@@ -190,7 +193,6 @@ export default class UserBio extends Component {
         })
         .then(() => {
           this.loading = false;
-          delete this.tempBio;
           m.redraw();
         });
     }
@@ -202,12 +204,12 @@ export default class UserBio extends Component {
   reset(e) {
     e.preventDefault();
 
-    if (!this.isDirty([...this.selectedYears].sort((a, b) => Number(a) - Number(b)).join(',')) ||
+    if (!this.isDirty(yearsToString(this.selectedYears)) ||
         confirm(extractText(app.translator.trans('dgc-user-students.forum.profile.cancel_confirm')))) {
       this.editing = false;
       const validYears = new Set(getYearOptions());
       this.selectedYears = new Set(
-        [...parseYears(this.attrs.user.bio())].filter((y) => validYears.has(y))
+        parseYears(this.attrs.user.bio()).filter((y) => validYears.has(y))
       );
       m.redraw();
     }

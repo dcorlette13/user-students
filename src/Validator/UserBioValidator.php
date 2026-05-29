@@ -24,7 +24,7 @@ class UserBioValidator extends AbstractValidator
             'bio' => [
                 'nullable',
                 'string',
-                'regex:/^(\d{4}(,\d{4})*)?$/',
+                'regex:/^\d{4}(,\d{4})*$|^$/',
             ],
         ];
     }
