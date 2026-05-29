@@ -103,11 +103,11 @@ export default class UserBio extends Component {
       content = (
         <div
           className="UserBio-content"
-          onclick={editable ? this.edit.bind(this) : () => undefined}
-          onkeydown={editable ? this.onkeydown.bind(this) : () => undefined}
-          role={editable ? 'button' : undefined}
-          tabindex={editable ? '0' : undefined}
-          aria-label={editable ? app.translator.trans('dgc-user-students.forum.profile.edit_bio_label') : undefined}
+          onclick={editable ? this.edit.bind(this) : null}
+          onkeydown={editable ? this.onkeydown.bind(this) : null}
+          role={editable ? 'button' : null}
+          tabindex={editable ? '0' : null}
+          aria-label={editable ? app.translator.trans('dgc-user-students.forum.profile.edit_bio_label') : null}
         >
           {subContent}
         </div>
