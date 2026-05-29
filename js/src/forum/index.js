@@ -6,11 +6,8 @@ import User from 'flarum/common/models/User';
 import Model from 'flarum/common/Model';
 import UserBio from './components/UserBio';
 
-export * from './components';
-
 app.initializers.add('dgc-user-students', () => {
   User.prototype.bio = Model.attribute('bio');
-  User.prototype.bioHtml = Model.attribute('bioHtml');
 
   extend(UserCard.prototype, 'infoItems', function (items) {
     let user = this.attrs.user;
