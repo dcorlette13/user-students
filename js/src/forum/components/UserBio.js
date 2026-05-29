@@ -26,6 +26,10 @@ function parseYears(bio) {
   );
 }
 
+// Stable no-op function — reusing the same reference avoids Mithril
+// seeing a changed event handler on every redraw
+function noop() {}
+
 /**
  * The `UserBio` component displays a user's graduation years, optionally
  * letting the user edit them via checkboxes.
@@ -106,11 +110,11 @@ export default class UserBio extends Component {
       content = (
         <div
           className="UserBio-content"
-          onclick={editable ? this.edit.bind(this) : null}
-          onkeydown={editable ? this.onkeydown.bind(this) : null}
-          role={editable ? 'button' : null}
-          tabindex={editable ? '0' : null}
-          aria-label={editable ? app.translator.trans('dgc-user-students.forum.profile.edit_bio_label') : null}
+          onclick={editable ? this.edit.bind(this) : noop}
+          onkeydown={editable ? this.onkeydown.bind(this) : noop}
+          role={editable ? 'button' : undefined}
+          tabindex={editable ? '0' : undefined}
+          aria-label={editable ? app.translator.trans('dgc-user-students.forum.profile.edit_bio_label') : undefined}
         >
           {subContent}
         </div>
