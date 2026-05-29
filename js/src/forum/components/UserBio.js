@@ -62,6 +62,7 @@ const CLASS_NAMES = {
   6: '6th grader',
 };
 
+// NOTE: This list must stay in sync with VALID_SCHOOLS in UserBioValidator.php
 const SCHOOL_OPTIONS = [
   { label: 'DCB',                value: 'DCB' },
   { label: 'LAMB',               value: 'LAMB' },
@@ -121,8 +122,6 @@ export default class UserBio extends Component {
     this.loading = false;
     this.selectedYears = new Set();
     this.selectedSchool = null;
-    this.textareaRows = '5';
-    this.bioMaxLength = app.forum.attribute('dgc-user-students.maxLength');
     this.bioPlaceholder =
       app.session && app.session.user && app.session.user.id() === this.attrs.user.id()
         ? app.translator.trans('dgc-user-students.forum.userbioPlaceholder')
@@ -205,14 +204,11 @@ export default class UserBio extends Component {
         }
       }
 
-      const maxLines = app.forum.attribute('dgc-user-students.maxLines') || 5;
-
       content = (
         <div
           className="UserBio-content"
           onclick={editable ? this.edit.bind(this) : () => undefined}
           onkeydown={editable ? this.onkeydown.bind(this) : () => undefined}
-          style={{ '--bio-max-lines': maxLines }}
           role={editable ? 'button' : undefined}
           tabindex={editable ? '0' : undefined}
           aria-label={editable ? app.translator.trans('dgc-user-students.forum.profile.edit_bio_label') : undefined}
@@ -262,13 +258,6 @@ export default class UserBio extends Component {
     if (e.ctrlKey || e.metaKey) return;
     e.preventDefault();
 
-    const selection = window.getSelection();
-    const lineIndex = selection.anchorOffset;
-    const clickedNode = !selection.anchorNode || !e.target.className.includes('UserBio') ? e.target : selection.anchorNode;
-    const lengthBefore = this.countTextLengthBefore(clickedNode);
-    const currentScroll = e.currentTarget.scrollTop;
-    const index = lengthBefore + lineIndex;
-
     // Initialise checkboxes from saved bio, filtering to valid year range
     const validYears = new Set(getYearOptions());
     this.selectedYears = new Set(
@@ -276,7 +265,6 @@ export default class UserBio extends Component {
     );
     this.selectedSchool = parseSchool(this.attrs.user.bio());
 
-    this.textareaRows = getComputedStyle(e.currentTarget).getPropertyValue('--bio-max-lines') || '5';
     this.editing = true;
     m.redraw.sync();
   }
