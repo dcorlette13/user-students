@@ -3,70 +3,59 @@ import Component from 'flarum/common/Component';
 import LoadingIndicator from 'flarum/common/components/LoadingIndicator';
 import Button from 'flarum/common/components/Button';
 import classList from 'flarum/common/utils/classList';
+import extractText from 'flarum/common/utils/extractText';
 
 /**
- * Returns an array of year strings starting from the current year,
- * up to 8 years into the future (9 entries total).
- */
-function getYearOptions() {
-  const currentYear = new Date().getFullYear();
-  const years = [];
-  for (let i = 0; i <= 8; i++) {
-    years.push(String(currentYear + i));
-  }
-  return years;
-}
-
-/**
- * Parses a comma-separated bio string into a Set of year strings.
- */
-function parseYears(bio) {
-  return new Set(
-    (bio || '').split(',').map((y) => y.trim()).filter((y) => y.length > 0)
-  );
-}
-
-// Stable no-op function — reusing the same reference avoids Mithril
-// seeing a changed event handler on every redraw
-function noop() {}
-
-/**
- * The `UserBio` component displays a user's graduation years, optionally
- * letting the user edit them via checkboxes.
+ * The `UserBio` component displays a user's bio, optionally letting the user
+ * edit it.
  */
 export default class UserBio extends Component {
   oninit(vnode) {
     super.oninit(vnode);
-
     this.editing = false;
     this.loading = false;
-
-    // Holds the in-progress checkbox selections while editing
-    this.selectedYears = new Set();
+    this.textareaRows = '5';
+    this.bioMaxLength = app.forum.attribute('dgc-user-students.maxLength');
+    this.bioPlaceholder =
+      app.session && app.session.user && app.session.user.id() === this.attrs.user.id()
+        ? app.translator.trans('dgc-user-students.forum.userbioPlaceholder')
+        : app.translator.trans('dgc-user-students.forum.userbioPlaceholderOtherUser', {
+            username: this.attrs.user.displayName(),
+          });
   }
 
   view() {
     const user = this.attrs.user;
-    const editable = !!this.attrs.editable && !!user.attribute('canEditBio');
-    const years = getYearOptions();
+    const editable = this.attrs.editable && this.attrs.user.attribute('canEditBio');
     let content;
 
     if (this.editing) {
+      const tempBio = this.tempBio;
+      const value = tempBio ?? user.bio();
+
+      const focusIfErrored = (vnode) => {
+        const textarea = vnode.dom;
+        textarea.value = value;
+        if (tempBio !== undefined) {
+          textarea.value = tempBio;
+          textarea.focus();
+          if (this.tempSelector !== undefined) {
+            textarea.selectionStart = this.tempSelector;
+            textarea.selectionEnd = this.tempSelector;
+            delete this.tempSelector;
+          }
+        }
+      };
+
       content = (
         <form onsubmit={this.save.bind(this)}>
-          <div className="UserBio-checkboxes">
-            {years.map((year) => (
-              <label className="UserBio-checkbox-label">
-                <input
-                  type="checkbox"
-                  value={year}
-                  checked={this.selectedYears.has(year)}
-                  onchange={this.onCheckboxChange.bind(this)}
-                />
-                {' '}{year}
-              </label>
-            ))}
-          </div>
+          <textarea
+            className="FormControl"
+            placeholder={extractText(this.bioPlaceholder)}
+            rows={this.textareaRows}
+            maxlength={this.bioMaxLength}
+            oncreate={focusIfErrored}
+          />
           <div className="UserBio-actions">
             <Button className="Button Button--primary" type="submit">
               {app.translator.trans('dgc-user-students.forum.profile.save_button')}
@@ -87,28 +76,24 @@ export default class UserBio extends Component {
           </p>
         );
       } else {
-        const selectedYears = [...parseYears(user.bio())];
-
-        if (selectedYears.length > 0) {
-          subContent = (
-            <ul className="UserBio-year-list">
-              {selectedYears.map((year) => <li>{year}</li>)}
-            </ul>
+        const bio = user.bio();
+        if (bio) {
+          subContent = m.trust(
+            '<p>' + $('<div/>').text(bio).html().replace(/\n/g, '<br>').autoLink({ rel: 'nofollow ugc', target: '_blank' }) + '</p>'
           );
         } else if (editable) {
-          subContent = (
-            <p className="UserBio-placeholder">
-              {app.translator.trans('dgc-user-students.forum.userbioPlaceholder')}
-            </p>
-          );
+          subContent = <p className="UserBio-placeholder">{this.bioPlaceholder}</p>;
         }
       }
+
+      const maxLines = app.forum.attribute('dgc-user-students.maxLines') || 5;
 
       content = (
         <div
           className="UserBio-content"
-          onclick={editable ? this.edit.bind(this) : noop}
-          onkeydown={editable ? this.onkeydown.bind(this) : noop}
+          onclick={editable ? this.edit.bind(this) : () => undefined}
+          onkeydown={editable ? this.onkeydown.bind(this) : () => undefined}
+          style={{ '--bio-max-lines': maxLines }}
           role={editable ? 'button' : undefined}
           tabindex={editable ? '0' : undefined}
           aria-label={editable ? app.translator.trans('dgc-user-students.forum.profile.edit_bio_label') : undefined}
@@ -133,16 +118,6 @@ export default class UserBio extends Component {
     );
   }
 
-  onCheckboxChange(e) {
-    const year = e.target.value;
-    if (e.target.checked) {
-      this.selectedYears.add(year);
-    } else {
-      this.selectedYears.delete(year);
-    }
-    m.redraw();
-  }
-
   onkeydown(e) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -154,36 +129,40 @@ export default class UserBio extends Component {
     if (e.ctrlKey || e.metaKey) return;
     e.preventDefault();
 
-    // Only retain saved years that fall within the current valid range
-    const validYears = new Set(getYearOptions());
-    this.selectedYears = new Set(
-      [...parseYears(this.attrs.user.bio())].filter((y) => validYears.has(y))
-    );
+    const selection = window.getSelection();
+    const lineIndex = selection.anchorOffset;
+    const clickedNode = !selection.anchorNode || !e.target.className.includes('UserBio') ? e.target : selection.anchorNode;
+    const lengthBefore = this.countTextLengthBefore(clickedNode);
+    const currentScroll = e.currentTarget.scrollTop;
+    const index = lengthBefore + lineIndex;
 
+    this.textareaRows = getComputedStyle(e.currentTarget).getPropertyValue('--bio-max-lines') || '5';
     this.editing = true;
-    m.redraw();
+    m.redraw.sync();
+
+    this.$('textarea').trigger('focus').prop('selectionStart', index).prop('selectionEnd', index).prop('scrollTop', currentScroll);
   }
 
   save(e) {
     e.preventDefault();
 
+    const value = this.$('textarea').val();
     const user = this.attrs.user;
-    // Sort numerically before saving for a consistent storage order
-    const value = [...this.selectedYears]
-      .sort((a, b) => Number(a) - Number(b))
-      .join(',');
+    const tempSelector = this.$('textarea').prop('selectionStart');
 
-    if (user.bio() !== value) {
+    if (this.isDirty()) {
       this.loading = true;
 
       user
         .save({ bio: value })
         .catch(() => {
-          this.editing = true;
-          m.redraw();
+          this.tempBio = value;
+          this.tempSelector = tempSelector;
+          this.edit();
         })
         .then(() => {
           this.loading = false;
+          delete this.tempBio;
           m.redraw();
         });
     }
@@ -194,12 +173,31 @@ export default class UserBio extends Component {
 
   reset(e) {
     e.preventDefault();
-    this.editing = false;
-    // Restore selections to saved state, filtered to valid range
-    const validYears = new Set(getYearOptions());
-    this.selectedYears = new Set(
-      [...parseYears(this.attrs.user.bio())].filter((y) => validYears.has(y))
-    );
-    m.redraw();
+
+    if (!this.isDirty() || confirm(extractText(app.translator.trans('dgc-user-students.forum.profile.cancel_confirm')))) {
+      this.editing = false;
+      delete this.tempBio;
+      m.redraw();
+    }
+  }
+
+  isDirty() {
+    const value = this.$('textarea').val();
+    const user = this.attrs.user;
+    return user.bio() !== value;
+  }
+
+  countTextLengthBefore(anchorNode) {
+    if (!anchorNode || (anchorNode instanceof HTMLElement && anchorNode.className.includes('UserBio'))) return 0;
+
+    let length = 0;
+
+    if (anchorNode.previousSibling) {
+      for (let prev = anchorNode.previousSibling; prev; prev = prev.previousSibling) {
+        length += prev.textContent.length;
+      }
+    }
+
+    return length + this.countTextLengthBefore(anchorNode.parentNode);
   }
 }
