@@ -82,6 +82,8 @@ export default class UserBio extends Component {
         </form>
       );
     } else {
+      // Non-editing view: display saved years as plain text, just like
+      // the original displayed the bio text. Clicking switches to checkboxes.
       let subContent;
 
       if (this.loading) {
@@ -91,14 +93,9 @@ export default class UserBio extends Component {
           </p>
         );
       } else {
-        const selectedYears = [...parseYears(user.bio())];
-
-        if (selectedYears.length > 0) {
-          subContent = (
-            <ul className="UserBio-year-list">
-              {selectedYears.map((year) => <li>{year}</li>)}
-            </ul>
-          );
+        const bio = user.bio();
+        if (bio) {
+          subContent = m.trust('<p>' + $('<div/>').text(bio).html() + '</p>');
         } else if (editable) {
           subContent = <p className="UserBio-placeholder">{this.bioPlaceholder}</p>;
         }
@@ -181,7 +178,6 @@ export default class UserBio extends Component {
     const value = [...this.selectedYears]
       .sort((a, b) => Number(a) - Number(b))
       .join(',');
-    const tempSelector = 0;
 
     if (this.isDirty(value)) {
       this.loading = true;
@@ -189,9 +185,8 @@ export default class UserBio extends Component {
       user
         .save({ bio: value })
         .catch(() => {
-          this.tempBio = value;
-          this.tempSelector = tempSelector;
-          this.edit();
+          this.editing = true;
+          m.redraw();
         })
         .then(() => {
           this.loading = false;
@@ -207,7 +202,8 @@ export default class UserBio extends Component {
   reset(e) {
     e.preventDefault();
 
-    if (confirm(extractText(app.translator.trans('dgc-user-students.forum.profile.cancel_confirm')))) {
+    if (!this.isDirty([...this.selectedYears].sort((a, b) => Number(a) - Number(b)).join(',')) ||
+        confirm(extractText(app.translator.trans('dgc-user-students.forum.profile.cancel_confirm')))) {
       this.editing = false;
       const validYears = new Set(getYearOptions());
       this.selectedYears = new Set(
