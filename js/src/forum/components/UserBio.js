@@ -33,6 +33,53 @@ function yearsToString(selectedYears) {
 }
 
 /**
+ * Maps a number of years until graduation to a class name string.
+ * 0 = senior, 1 = junior, 2 = sophomore, 3 = freshman,
+ * 4 = 8th grader, 5 = 7th grader, 6 = 6th grader.
+ */
+const CLASS_NAMES = {
+  0: 'senior',
+  1: 'junior',
+  2: 'sophomore',
+  3: 'freshman',
+  4: '8th grader',
+  5: '7th grader',
+  6: '6th grader',
+};
+
+/**
+ * Given a comma-separated bio string of graduation years, returns a
+ * display string like "Guardian of a DCI junior and senior", or null
+ * if there are no current students.
+ */
+function buildDisplayString(bio) {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  // If July (month 6, 0-indexed) or later, subtract an extra 1
+  const offset = now.getMonth() >= 6 ? 1 : 0;
+
+  const classNames = parseYears(bio)
+    .map((y) => Number(y) - currentYear - offset)
+    .filter((n) => n >= 0 && n <= 6)
+    .sort((a, b) => b - a) // largest to smallest (senior before junior etc.)
+    .map((n) => CLASS_NAMES[n]);
+
+  if (classNames.length === 0) return null;
+
+  let classList;
+  if (classNames.length === 1) {
+    classList = classNames[0];
+  } else if (classNames.length === 2) {
+    classList = classNames[0] + ' and ' + classNames[1];
+  } else {
+    const allButLast = classNames.slice(0, -1).join(', ');
+    classList = allButLast + ', and ' + classNames[classNames.length - 1];
+  }
+
+  return 'Guardian of a DCI ' + classList;
+}
+
+/**
  * The `UserBio` component displays a user's graduation years, optionally
  * letting the user edit them via checkboxes.
  */
@@ -90,7 +137,7 @@ export default class UserBio extends Component {
         </form>
       );
     } else {
-      // Non-editing view: display saved years as plain text.
+      // Non-editing view: display computed class string, or placeholder.
       // Clicking switches to the checkbox editor.
       let subContent;
 
@@ -101,9 +148,9 @@ export default class UserBio extends Component {
           </p>
         );
       } else {
-        const bio = user.bio();
-        if (bio) {
-          subContent = m.trust('<p>' + $('<div/>').text(bio).html() + '</p>');
+        const displayString = buildDisplayString(user.bio());
+        if (displayString) {
+          subContent = m.trust('<p>' + $('<div/>').text(displayString).html() + '</p>');
         } else if (editable) {
           subContent = <p className="UserBio-placeholder">{this.bioPlaceholder}</p>;
         }
