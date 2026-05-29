@@ -19,3 +19,4 @@ dgc-user-students:
             cancel_button: Cancel
             save_button: Save
             edit_bio_label: Edit bio
+            graduation_years_prompt: Choose the years that your students will graduate.

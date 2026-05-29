@@ -63,6 +63,9 @@ export default class UserBio extends Component {
 
       content = (
         <form onsubmit={this.save.bind(this)}>
+          <p className="UserBio-prompt">
+            {app.translator.trans('dgc-user-students.forum.profile.graduation_years_prompt')}
+          </p>
           <div className="UserBio-checkboxes">
             {years.map((year) => (
               <label className="UserBio-checkbox-label">
