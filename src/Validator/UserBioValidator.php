@@ -12,24 +12,9 @@
 namespace DGC\UserStudents\Validator;
 
 use Flarum\Foundation\AbstractValidator;
-use Flarum\Settings\SettingsRepositoryInterface;
-use Illuminate\Validation\Factory;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 class UserBioValidator extends AbstractValidator
 {
-    /**
-     * @var SettingsRepositoryInterface
-     */
-    protected $settings;
-
-    public function __construct(Factory $validator, TranslatorInterface $translator, SettingsRepositoryInterface $settings)
-    {
-        parent::__construct($validator, $translator);
-
-        $this->settings = $settings;
-    }
-
     /**
      * @return array
      */
@@ -37,8 +22,9 @@ class UserBioValidator extends AbstractValidator
     {
         return [
             'bio' => [
+                'nullable',
                 'string',
-                'max:'.$this->settings->get('dgc-user-students.maxLength'),
+                'regex:/^(\d{4}(,\d{4})*)?$/',
             ],
         ];
     }

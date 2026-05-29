@@ -11,35 +11,20 @@
 
 namespace DGC\UserStudents\Listeners;
 
-use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\User\Event\Saving;
 use DGC\UserStudents\Event\BioChanged;
-use DGC\UserStudents\Formatter\UserBioFormatter;
 use DGC\UserStudents\Validator\UserBioValidator;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 
 class SaveUserBio
 {
-    /**
-     * @var SettingsRepositoryInterface
-     */
-    protected $settings;
-
-    /**
-     * @var UserBioFormatter
-     */
-    protected $formatter;
-
     /**
      * @var UserBioValidator
      */
     protected $validator;
 
-    public function __construct(SettingsRepositoryInterface $settings, UserBioFormatter $formatter, UserBioValidator $validator)
+    public function __construct(UserBioValidator $validator)
     {
-        $this->settings = $settings;
-        $this->formatter = $formatter;
         $this->validator = $validator;
     }
 
@@ -55,21 +40,13 @@ class SaveUserBio
         $actor = $event->actor;
 
         $attributes = Arr::get($data, 'attributes', []);
-        $allowFormatting = $this->settings->get('dgc-user-students.allowFormatting', false);
 
         if (isset($attributes['bio'])) {
             $actor->assertCan('editBio', $user);
 
             $this->validator->assertValid(Arr::only($attributes, 'bio'));
 
-            $bio = Str::of($attributes['bio'])->trim();
-            $bio = preg_replace('/\R{3,}/u', "\n\n", $bio);
-
-            if ($allowFormatting) {
-                $user->bio = $this->formatter->parse($bio);
-            } else {
-                $user->bio = $bio;
-            }
+            $user->bio = $attributes['bio'];
 
             if ($user->isDirty('bio')) {
                 $user->raise(new BioChanged($user));
