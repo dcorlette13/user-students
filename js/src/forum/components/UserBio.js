@@ -22,14 +22,29 @@ function getYearOptions() {
  * Parses a comma-separated bio string into a sorted array of year strings.
  */
 function parseYears(bio) {
-  return (bio || '').split(',').map((y) => y.trim()).filter((y) => y.length > 0);
+  const yearsPart = (bio || '').split('|')[0];
+  return yearsPart.split(',').map((y) => y.trim()).filter((y) => y.length > 0);
 }
 
 /**
- * Converts the selectedYears Set to a sorted comma-separated string for storage.
+ * Parses the school from the bio string. Returns null if not set or N/A.
  */
-function yearsToString(selectedYears) {
-  return Array.from(selectedYears).sort((a, b) => Number(a) - Number(b)).join(',');
+function parseSchool(bio) {
+  const parts = (bio || '').split('|');
+  if (parts.length < 2) return null;
+  const school = parts[1].trim();
+  return school.length > 0 ? school : null;
+}
+
+/**
+ * Converts the selectedYears Set and school to a storage string.
+ */
+function buildBioString(selectedYears, school) {
+  const yearsStr = Array.from(selectedYears).sort((a, b) => Number(a) - Number(b)).join(',');
+  if (school) {
+    return yearsStr + '|' + school;
+  }
+  return yearsStr;
 }
 
 /**
@@ -47,41 +62,57 @@ const CLASS_NAMES = {
   6: '6th grader',
 };
 
+const SCHOOL_OPTIONS = [
+  { label: 'DCB',                value: 'DCB' },
+  { label: 'LAMB',               value: 'LAMB' },
+  { label: 'Mundo Verde',        value: 'Mundo Verde' },
+  { label: 'Stokes',             value: 'Stokes' },
+  { label: 'Yu Ying',            value: 'Yu Ying' },
+  { label: 'a non-member school', value: 'a non-member school' },
+  { label: 'N/A',                value: null },
+];
+
 /**
- * Given a comma-separated bio string of graduation years, returns a
- * display string like "Guardian of a DCI junior and senior", or null
- * if there are no current students.
+ * Given a bio string, returns a display string like
+ * "Guardian of a DCI junior and senior from Yu Ying",
+ * or null if there are no current students.
  */
 function buildDisplayString(bio) {
   const now = new Date();
   const currentYear = now.getFullYear();
-  // If July (month 6, 0-indexed) or later, subtract an extra 1
   const offset = now.getMonth() >= 6 ? 1 : 0;
 
   const classNames = parseYears(bio)
     .map((y) => Number(y) - currentYear - offset)
     .filter((n) => n >= 0 && n <= 6)
-    .sort((a, b) => b - a) // largest to smallest (senior before junior etc.)
+    .sort((a, b) => b - a)
     .map((n) => CLASS_NAMES[n]);
 
   if (classNames.length === 0) return null;
 
-  let classList;
+  let classStr;
   if (classNames.length === 1) {
-    classList = classNames[0];
+    classStr = classNames[0];
   } else if (classNames.length === 2) {
-    classList = classNames[0] + ' and ' + classNames[1];
+    classStr = classNames[0] + ' and ' + classNames[1];
   } else {
     const allButLast = classNames.slice(0, -1).join(', ');
-    classList = allButLast + ', and ' + classNames[classNames.length - 1];
+    classStr = allButLast + ', and ' + classNames[classNames.length - 1];
   }
 
-  return 'Guardian of a DCI ' + classList;
+  let displayStr = 'Guardian of a DCI ' + classStr;
+
+  const school = parseSchool(bio);
+  if (school) {
+    displayStr += ' from ' + school;
+  }
+
+  return displayStr;
 }
 
 /**
- * The `UserBio` component displays a user's graduation years, optionally
- * letting the user edit them via checkboxes.
+ * The `UserBio` component displays a user's graduation years and feeder
+ * school, optionally letting the user edit them.
  */
 export default class UserBio extends Component {
   oninit(vnode) {
@@ -89,6 +120,7 @@ export default class UserBio extends Component {
     this.editing = false;
     this.loading = false;
     this.selectedYears = new Set();
+    this.selectedSchool = null;
     this.textareaRows = '5';
     this.bioMaxLength = app.forum.attribute('dgc-user-students.maxLength');
     this.bioPlaceholder =
@@ -107,6 +139,7 @@ export default class UserBio extends Component {
 
     if (this.editing) {
       const selectedYears = this.selectedYears;
+      const selectedSchool = this.selectedSchool;
 
       content = (
         <form onsubmit={this.save.bind(this)}>
@@ -126,6 +159,23 @@ export default class UserBio extends Component {
               </label>
             ))}
           </div>
+          <p className="UserBio-prompt">
+            {app.translator.trans('dgc-user-students.forum.profile.feeder_school_prompt')}
+          </p>
+          <div className="UserBio-schools">
+            {SCHOOL_OPTIONS.map((option) => (
+              <label className="UserBio-school-label">
+                <input
+                  type="radio"
+                  name="feeder-school"
+                  value={option.value || ''}
+                  checked={selectedSchool === option.value}
+                  onchange={this.onSchoolChange.bind(this)}
+                />
+                {' '}{option.label}
+              </label>
+            ))}
+          </div>
           <div className="UserBio-actions">
             <Button className="Button Button--primary" type="submit">
               {app.translator.trans('dgc-user-students.forum.profile.save_button')}
@@ -137,8 +187,6 @@ export default class UserBio extends Component {
         </form>
       );
     } else {
-      // Non-editing view: display computed class string, or placeholder.
-      // Clicking switches to the checkbox editor.
       let subContent;
 
       if (this.loading) {
@@ -197,6 +245,11 @@ export default class UserBio extends Component {
     }
   }
 
+  onSchoolChange(e) {
+    const value = e.target.value;
+    this.selectedSchool = value.length > 0 ? value : null;
+  }
+
   onkeydown(e) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -220,6 +273,7 @@ export default class UserBio extends Component {
     this.selectedYears = new Set(
       parseYears(this.attrs.user.bio()).filter((y) => validYears.has(y))
     );
+    this.selectedSchool = parseSchool(this.attrs.user.bio());
 
     this.textareaRows = getComputedStyle(e.currentTarget).getPropertyValue('--bio-max-lines') || '5';
     this.editing = true;
@@ -230,7 +284,7 @@ export default class UserBio extends Component {
     e.preventDefault();
 
     const user = this.attrs.user;
-    const value = yearsToString(this.selectedYears);
+    const value = buildBioString(this.selectedYears, this.selectedSchool);
 
     if (this.isDirty(value)) {
       this.loading = true;
@@ -254,13 +308,14 @@ export default class UserBio extends Component {
   reset(e) {
     e.preventDefault();
 
-    if (!this.isDirty(yearsToString(this.selectedYears)) ||
+    if (!this.isDirty(buildBioString(this.selectedYears, this.selectedSchool)) ||
         confirm(extractText(app.translator.trans('dgc-user-students.forum.profile.cancel_confirm')))) {
       this.editing = false;
       const validYears = new Set(getYearOptions());
       this.selectedYears = new Set(
         parseYears(this.attrs.user.bio()).filter((y) => validYears.has(y))
       );
+      this.selectedSchool = parseSchool(this.attrs.user.bio());
       m.redraw();
     }
   }
