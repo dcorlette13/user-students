@@ -1,15 +1,15 @@
 <?php
 
 /*
- * This file is part of fof/user-bio.
+ * This file is part of dgc/user-students.
  *
- * Copyright (c) FriendsOfFlarum.
+ * Copyright (c) Corlette GTM.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace FoF\UserBio\Tests\integration\api;
+namespace DGC\UserStudents\Tests\integration\api;
 
 use Carbon\Carbon;
 use Flarum\Testing\integration\RetrievesAuthorizedUsers;
@@ -26,7 +26,7 @@ class BioTest extends TestCase
 
         $this->setting('mail_driver', 'log');
 
-        $this->extension('fof-user-bio');
+        $this->extension('dgc-user-students');
 
         $this->prepareDatabase([
             'users' => [
@@ -70,9 +70,9 @@ class BioTest extends TestCase
                 ['user_id' => 5, 'group_id' => 4],
             ],
             'group_permission' => [
-                ['permission' => 'fof-user-bio.editOwn', 'group_id' => 4],
-                ['permission' => 'fof-user-bio.view', 'group_id' => 4],
-                ['permission' => 'fof-user-bio.editAny', 'group_id' => 4],
+                ['permission' => 'dgc-user-students.editOwn', 'group_id' => 4],
+                ['permission' => 'dgc-user-students.view', 'group_id' => 4],
+                ['permission' => 'dgc-user-students.editAny', 'group_id' => 4],
             ],
         ]);
     }
@@ -81,7 +81,7 @@ class BioTest extends TestCase
     {
         $this->prepareDatabase([
             'group_permission' => [
-                ['permission' => 'fof-user-bio.editOwn', 'group_id' => 3],
+                ['permission' => 'dgc-user-students.editOwn', 'group_id' => 3],
             ],
         ]);
     }
@@ -90,7 +90,7 @@ class BioTest extends TestCase
     {
         $this->prepareDatabase([
             'group_permission' => [
-                ['permission' => 'fof-user-bio.view', 'group_id' => 3],
+                ['permission' => 'dgc-user-students.view', 'group_id' => 3],
             ],
         ]);
     }
@@ -136,7 +136,7 @@ class BioTest extends TestCase
      */
     public function admin_can_create_user_with_bio_formatted()
     {
-        $this->setting('fof-user-bio.allowFormatting', true);
+        $this->setting('dgc-user-students.allowFormatting', true);
 
         $response = $this->send(
             $this->request(
@@ -334,7 +334,7 @@ class BioTest extends TestCase
     public function formatted_bio_is_returned_as_html_when_formatting_is_allowed()
     {
         // Enable formatting
-        $this->setting('fof-user-bio.allowFormatting', true);
+        $this->setting('dgc-user-students.allowFormatting', true);
 
         $response = $this->send(
             $this->request(
@@ -360,7 +360,7 @@ class BioTest extends TestCase
     public function formatted_bio_is_returned_as_plain_text_when_formatting_is_not_allowed()
     {
         // Enable formatting
-        $this->setting('fof-user-bio.allowFormatting', false);
+        $this->setting('dgc-user-students.allowFormatting', false);
 
         $response = $this->send(
             $this->request(

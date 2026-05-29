@@ -1,15 +1,15 @@
 <?php
 
 /*
- * This file is part of fof/user-bio.
+ * This file is part of dgc/user-students.
  *
- * Copyright (c) FriendsOfFlarum.
+ * Copyright (c) Corlette GTM.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace FoF\UserBio\Access;
+namespace DGC\UserStudents\Access;
 
 use Carbon\Carbon;
 use Flarum\User\Access\AbstractPolicy;
@@ -20,13 +20,13 @@ class UserPolicy extends AbstractPolicy
     public function viewBio(User $actor, User $user)
     {
         // Suspended users won't show their Bio, unless you are allowed to edit any bio.
-        if (!$actor->hasPermission('fof-user-bio.editAny') && $this->isSuspended($user)) {
+        if (!$actor->hasPermission('dgc-user-students.editAny') && $this->isSuspended($user)) {
             return $this->deny();
         }
 
         // We only let the user see its own bio if they are also allowed to edit it
-        if (($actor->id === $user->id && $actor->hasPermission('fof-user-bio.editOwn'))
-            || $actor->hasPermission('fof-user-bio.view')
+        if (($actor->id === $user->id && $actor->hasPermission('dgc-user-students.editOwn'))
+            || $actor->hasPermission('dgc-user-students.view')
         ) {
             return $this->allow();
         }
@@ -37,9 +37,9 @@ class UserPolicy extends AbstractPolicy
     public function editBio(User $actor, User $user)
     {
         if (($actor->id === $user->id
-                && $actor->hasPermission('fof-user-bio.editOwn')
+                && $actor->hasPermission('dgc-user-students.editOwn')
                 && !$this->isSuspended($user))
-            || $actor->hasPermission('fof-user-bio.editAny')) {
+            || $actor->hasPermission('dgc-user-students.editAny')) {
             return $this->allow();
         }
 

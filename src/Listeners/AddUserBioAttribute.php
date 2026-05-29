@@ -1,20 +1,20 @@
 <?php
 
 /*
- * This file is part of fof/user-bio.
+ * This file is part of dgc/user-students.
  *
- * Copyright (c) FriendsOfFlarum.
+ * Copyright (c) Corlette GTM.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace FoF\UserBio\Listeners;
+namespace DGC\UserStudents\Listeners;
 
 use Flarum\Api\Serializer\UserSerializer;
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\User\User;
-use FoF\UserBio\Formatter\UserBioFormatter;
+use DGC\UserStudents\Formatter\UserBioFormatter;
 
 class AddUserBioAttribute
 {
@@ -47,7 +47,7 @@ class AddUserBioAttribute
 
         $bio = $user->bio ?? '';
         $isXML = str_starts_with($bio, '<') && str_ends_with($bio, '>');
-        $allowFormatting = $this->settings->get('fof-user-bio.allowFormatting', false);
+        $allowFormatting = $this->settings->get('dgc-user-students.allowFormatting', false);
 
         if ($actor->can('viewBio', $user)) {
             $canEdit = $actor->can('editBio', $user);

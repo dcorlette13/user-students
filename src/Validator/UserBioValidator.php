@@ -1,15 +1,15 @@
 <?php
 
 /*
- * This file is part of fof/user-bio.
+ * This file is part of dgc/user-students.
  *
- * Copyright (c) FriendsOfFlarum.
+ * Copyright (c) Corlette GTM.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace FoF\UserBio\Validator;
+namespace DGC\UserStudents\Validator;
 
 use Flarum\Foundation\AbstractValidator;
 use Flarum\Settings\SettingsRepositoryInterface;
@@ -38,7 +38,7 @@ class UserBioValidator extends AbstractValidator
         return [
             'bio' => [
                 'string',
-                'max:'.$this->settings->get('fof-user-bio.maxLength'),
+                'max:'.$this->settings->get('dgc-user-students.maxLength'),
             ],
         ];
     }

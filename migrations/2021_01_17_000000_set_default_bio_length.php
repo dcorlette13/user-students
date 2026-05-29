@@ -1,9 +1,9 @@
 <?php
 
 /*
- * This file is part of fof/user-bio.
+ * This file is part of dgc/user-students.
  *
- * Copyright (c) FriendsOfFlarum.
+ * Copyright (c) Corlette GTM.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -22,6 +22,6 @@ return [
          */
         $settings = resolve('flarum.settings');
 
-        $settings->delete('fof-user-bio.maxLength');
+        $settings->delete('dgc-user-students.maxLength');
     },
 ];

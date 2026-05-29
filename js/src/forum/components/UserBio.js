@@ -37,7 +37,7 @@ export default class UserBio extends Component {
     /**
      * The max configured character count the bio may be
      */
-    this.bioMaxLength = app.forum.attribute('fof-user-bio.maxLength');
+    this.bioMaxLength = app.forum.attribute('dgc-user-students.maxLength');
 
     /**
      * The placeholder shown in the bio textbox when no input is set.
@@ -45,9 +45,9 @@ export default class UserBio extends Component {
     this.bioPlaceholder =
       app.session && app.session.user && app.session.user.id() === this.attrs.user.id()
         ? // Normal placeholder if they're looking at their own profile
-          app.translator.trans('fof-user-bio.forum.userbioPlaceholder')
+          app.translator.trans('dgc-user-students.forum.userbioPlaceholder')
         : // Special placeholder if someone else is viewing their profile with edit access
-          app.translator.trans('fof-user-bio.forum.userbioPlaceholderOtherUser', {
+          app.translator.trans('dgc-user-students.forum.userbioPlaceholderOtherUser', {
             username: this.attrs.user.displayName(),
           });
   }
@@ -90,10 +90,10 @@ export default class UserBio extends Component {
           />
           <div className="UserBio-actions">
             <Button className="Button Button--primary" type="submit">
-              {app.translator.trans('fof-user-bio.forum.profile.save_button')}
+              {app.translator.trans('dgc-user-students.forum.profile.save_button')}
             </Button>
             <Button className="Button" type="reset" onclick={this.reset.bind(this)}>
-              {app.translator.trans('fof-user-bio.forum.profile.cancel_button')}
+              {app.translator.trans('dgc-user-students.forum.profile.cancel_button')}
             </Button>
           </div>
         </form>
@@ -121,7 +121,7 @@ export default class UserBio extends Component {
         }
       }
 
-      const maxLines = app.forum.attribute('fof-user-bio.maxLines') || 5;
+      const maxLines = app.forum.attribute('dgc-user-students.maxLines') || 5;
 
       content = (
         <div
@@ -132,7 +132,7 @@ export default class UserBio extends Component {
           style={{ '--bio-max-lines': maxLines }}
           role={editable ? 'button' : undefined}
           tabindex={editable ? '0' : undefined}
-          aria-label={editable ? app.translator.trans('fof-user-bio.forum.profile.edit_bio_label') : undefined}
+          aria-label={editable ? app.translator.trans('dgc-user-students.forum.profile.edit_bio_label') : undefined}
         >
           {subContent}
         </div>
@@ -230,7 +230,7 @@ export default class UserBio extends Component {
     e.preventDefault();
 
     // Either nothing changed or we want to confirm the loss of changes
-    if (!this.isDirty() || confirm(extractText(app.translator.trans('fof-user-bio.forum.profile.cancel_confirm')))) {
+    if (!this.isDirty() || confirm(extractText(app.translator.trans('dgc-user-students.forum.profile.cancel_confirm')))) {
       this.editing = false;
       delete this.tempBio;
       m.redraw();

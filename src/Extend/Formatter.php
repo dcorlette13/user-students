@@ -1,20 +1,20 @@
 <?php
 
 /*
- * This file is part of fof/user-bio.
+ * This file is part of dgc/user-students.
  *
- * Copyright (c) FriendsOfFlarum.
+ * Copyright (c) Corlette GTM.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace FoF\UserBio\Extend;
+namespace DGC\UserStudents\Extend;
 
 use Flarum\Extend\Formatter as FlarumFormatter;
 use Flarum\Extension\Extension;
 use Flarum\Foundation\ContainerUtil;
-use FoF\UserBio\Formatter\FormatterServiceProvider;
+use DGC\UserStudents\Formatter\FormatterServiceProvider;
 use Illuminate\Contracts\Container\Container;
 
 class Formatter extends FlarumFormatter
@@ -76,7 +76,7 @@ class Formatter extends FlarumFormatter
 
     public function extend(Container $container, ?Extension $extension = null)
     {
-        $container->extend('fof-user-bio.formatter', function ($formatter, $container) {
+        $container->extend('dgc-user-students.formatter', function ($formatter, $container) {
             foreach ($this->configurationCallbacks as $callback) {
                 $formatter->addConfigurationCallback(ContainerUtil::wrapCallback($callback, $container));
             }

@@ -1,21 +1,21 @@
 <?php
 
 /*
- * This file is part of fof/user-bio.
+ * This file is part of dgc/user-students.
  *
- * Copyright (c) FriendsOfFlarum.
+ * Copyright (c) Corlette GTM.
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-namespace FoF\UserBio\Listeners;
+namespace DGC\UserStudents\Listeners;
 
 use Flarum\Settings\SettingsRepositoryInterface;
 use Flarum\User\Event\Saving;
-use FoF\UserBio\Event\BioChanged;
-use FoF\UserBio\Formatter\UserBioFormatter;
-use FoF\UserBio\Validator\UserBioValidator;
+use DGC\UserStudents\Event\BioChanged;
+use DGC\UserStudents\Formatter\UserBioFormatter;
+use DGC\UserStudents\Validator\UserBioValidator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
@@ -55,7 +55,7 @@ class SaveUserBio
         $actor = $event->actor;
 
         $attributes = Arr::get($data, 'attributes', []);
-        $allowFormatting = $this->settings->get('fof-user-bio.allowFormatting', false);
+        $allowFormatting = $this->settings->get('dgc-user-students.allowFormatting', false);
 
         if (isset($attributes['bio'])) {
             $actor->assertCan('editBio', $user);
