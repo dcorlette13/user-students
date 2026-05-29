@@ -10,12 +10,22 @@ app.initializers.add('dgc-user-students', () => {
   User.prototype.bio = Model.attribute('bio');
 
   extend(UserCard.prototype, 'infoItems', function (items) {
-    let user = this.attrs.user;
+    if (!this.attrs || !this.attrs.user) {
+      return;
+    }
+
+    const user = this.attrs.user;
 
     if (!user.attribute('canViewBio')) {
       return;
     }
 
-    items.add('bio', <UserBio user={user} editable={this.attrs.editable} />, -100);
+    const editable = !!this.attrs.editable;
+
+    items.add('bio', {
+      view() {
+        return <UserBio user={user} editable={editable} />;
+      },
+    }, -100);
   });
 });

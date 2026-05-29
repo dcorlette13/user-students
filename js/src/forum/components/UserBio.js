@@ -43,7 +43,10 @@ export default class UserBio extends Component {
 
   view() {
     const user = this.attrs.user;
-    const editable = this.attrs.editable && user.attribute('canEditBio');
+
+    if (!user) return <div className="UserBio" />;
+
+    const editable = !!this.attrs.editable && !!user.attribute('canEditBio');
     const years = getYearOptions();
     let content;
 
