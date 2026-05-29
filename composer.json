@@ -1,6 +1,7 @@
 {
     "name": "dgc/user-students",
     "description": "User students extension for Flarum",
+    "version": "1.0.0",
     "keywords": [
         "flarum",
         "dgc"
@@ -24,6 +25,7 @@
         }
     },
     "extra": {
+        "version": "1.0.0",
         "flarum-extension": {
             "title": "User's Students",
             "category": "feature",
