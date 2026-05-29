@@ -27,24 +27,5 @@ app.initializers.add('dgc-user-students', () => {
         permission: 'dgc-user-students.editAny',
       },
       'moderate'
-    )
-    .registerSetting({
-      label: app.translator.trans('dgc-user-students.admin.setting.bioLimit'),
-      setting: 'dgc-user-students.maxLength',
-      type: 'number',
-      placeholder: 200,
-    })
-    .registerSetting({
-      label: app.translator.trans('dgc-user-students.admin.setting.maxLines'),
-      setting: 'dgc-user-students.maxLines',
-      type: 'number',
-      placeholder: 5,
-      min: 5,
-    })
-    .registerSetting({
-      label: app.translator.trans('dgc-user-students.admin.setting.allowFormatting'),
-      help: app.translator.trans('dgc-user-students.admin.setting.allowFormatting_help'),
-      setting: 'dgc-user-students.allowFormatting',
-      type: 'boolean',
-    });
+    );
 });

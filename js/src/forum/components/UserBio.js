@@ -198,7 +198,8 @@ export default class UserBio extends Component {
       } else {
         const displayString = buildDisplayString(user.bio());
         if (displayString) {
-          subContent = m.trust('<p>' + $('<div/>').text(displayString).html() + '</p>');
+          // Plain text node — Mithril auto-escapes, so no HTML can be injected
+          subContent = <p>{displayString}</p>;
         } else if (editable) {
           subContent = <p className="UserBio-placeholder">{this.bioPlaceholder}</p>;
         }

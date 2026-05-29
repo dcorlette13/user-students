@@ -14,7 +14,6 @@ namespace DGC\UserStudents;
 use Flarum\Api\Serializer\UserSerializer;
 use Flarum\Extend as Flarum;
 use Flarum\Gdpr\Extend\UserData;
-use Flarum\Settings\Event\Saved;
 use Flarum\User\Event\Saving;
 use Flarum\User\User;
 
@@ -32,22 +31,13 @@ return [
         ->cast('bio', 'string'),
 
     (new Flarum\Event())
-        ->listen(Saving::class, Listeners\SaveUserBio::class)
-        ->listen(Saved::class, Listeners\ClearFormatterCache::class),
+        ->listen(Saving::class, Listeners\SaveUserBio::class),
 
     (new Flarum\ApiSerializer(UserSerializer::class))
         ->attributes(Listeners\AddUserBioAttribute::class),
 
     (new Flarum\Policy())
         ->modelPolicy(User::class, Access\UserPolicy::class),
-
-    (new Flarum\Settings())
-        ->serializeToForum('dgc-user-students.maxLength', 'dgc-user-students.maxLength', 'intVal')
-        ->serializeToForum('dgc-user-students.maxLines', 'dgc-user-students.maxLines', 'intVal')
-        ->default('dgc-user-students.maxLength', 200),
-
-    (new Flarum\ServiceProvider())
-        ->register(Formatter\FormatterServiceProvider::class),
 
     (new Flarum\Conditional())
         ->whenExtensionEnabled('flarum-gdpr', fn () => [
