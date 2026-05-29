@@ -1,0 +1,23 @@
+# JavaScript dependencies
+js/node_modules/
+
+# Composer dependencies
+vendor/
+
+# Build artifacts (uncomment to also exclude compiled JS)
+# js/dist/
+
+# PHPUnit / testing
+.phpunit.result.cache
+tests/.phpunit.result.cache
+tests/integration/.env
+
+# PHPStan cache
+.phpstan/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
